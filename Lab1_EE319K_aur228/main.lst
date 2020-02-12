@@ -1,0 +1,231 @@
+
+
+
+ARM Macro Assembler    Page 1 
+
+
+    1 00000000         ;****************** main.s ***************
+    2 00000000         ; Program initially written by: Yerraballi and Valvano
+    3 00000000         ; Author: Adeel Rehman
+    4 00000000         ; Date Created: 1/15/2018 
+    5 00000000         ; Last Modified: 1/30/2020 
+    6 00000000         ; Brief description of the program: Solution to Lab1
+    7 00000000         ; The objective of this system is to implement odd-bit c
+                       ounting system
+    8 00000000         ; Hardware connections: 
+    9 00000000         ;  Output is positive logic, 1 turns on the LED, 0 turns
+                        off the LED
+   10 00000000         ;  Inputs are negative logic, meaning switch not pressed
+                        is 1, pressed is 0
+   11 00000000         ;    PE0 is an input 
+   12 00000000         ;    PE1 is an input 
+   13 00000000         ;    PE2 is an input 
+   14 00000000         ;    PE3 is the output
+   15 00000000         ; Overall goal: 
+   16 00000000         ;   Make the output 1 if there is an odd number of switc
+                       hes pressed, 
+   17 00000000         ;     otherwise make the output 0
+   18 00000000         
+   19 00000000         ; The specific operation of this system 
+   20 00000000         ;   Initialize Port E to make PE0,PE1,PE2 inputs and PE3
+                        an output
+   21 00000000         ;   Over and over, read the inputs, calculate the result
+                        and set the output
+   22 00000000         ; PE2  PE1 PE0  | PE3
+   23 00000000         ; 0    0    0   |  1    odd number of 0’s //not xor? 
+   24 00000000         ; 0    0    1   |  0    even number of 0’s
+   25 00000000         ; 0    1    0   |  0    even number of 0’s
+   26 00000000         ; 0    1    1   |  1    odd number of 0’s
+   27 00000000         ; 1    0    0   |  0    even number of 0’s
+   28 00000000         ; 1    0    1   |  1    odd number of 0’s
+   29 00000000         ; 1    1    0   |  1    odd number of 0’s
+   30 00000000         ; 1    1    1   |  0    even number of 0’s
+   31 00000000         ;There are 8 valid output values for Port E: 0x01,0x02,0
+                       x04,0x07,0x08,0x0B,0x0D, and 0x0E. 
+   32 00000000         
+   33 00000000         ; NOTE: Do not use any conditional branches in your solu
+                       tion. 
+   34 00000000         ;       We want you to think of the solution in terms of
+                        logical and shift operations
+   35 00000000         
+   36 00000000 400243FC 
+                       GPIO_PORTE_DATA_R
+                               EQU              0x400243FC
+   37 00000000 40024400 
+                       GPIO_PORTE_DIR_R
+                               EQU              0x40024400
+   38 00000000 4002451C 
+                       GPIO_PORTE_DEN_R
+                               EQU              0x4002451C
+   39 00000000 400FE608 
+                       SYSCTL_RCGCGPIO_R
+                               EQU              0x400FE608
+   40 00000000         
+   41 00000000                 THUMB
+   42 00000000                 AREA             DATA, ALIGN=2
+
+
+
+ARM Macro Assembler    Page 2 
+
+
+   43 00000000         ;global variables go here
+   44 00000000                 ALIGN
+   45 00000000                 AREA             |.text|, CODE, READONLY, ALIGN=
+2
+   46 00000000                 EXPORT           Start
+   47 00000000         Start
+   48 00000000         ;code to run once that initializes PE3,PE2,PE1,PE0
+   49 00000000 4817            LDR              R0, =SYSCTL_RCGCGPIO_R 
+                                                            ;//clock register
+   50 00000002 7801            LDRB             R1, [R0]
+   51 00000004 F041 0110       ORR              R1, #0x10
+   52 00000008 7001            STRB             R1, [R0]
+   53 0000000A         
+   54 0000000A BF00            NOP
+   55 0000000C BF00            NOP
+   56 0000000E         
+   57 0000000E 4815            LDR              R0, =GPIO_PORTE_DIR_R ;//direct
+                                                            ion register
+   58 00000010 7801            LDRB             R1, [R0]
+   59 00000012 F001 01F8       AND              R1, #0xF8
+   60 00000016 F041 0108       ORR              R1, #0x08   ;//outputs are 1, i
+                                                            nputs are 0
+   61 0000001A 7001            STRB             R1, [R0]
+   62 0000001C         
+   63 0000001C 4812            LDR              R0, =GPIO_PORTE_DEN_R
+   64 0000001E 7801            LDRB             R1, [R0]
+   65 00000020 F041 010F       ORR              R1, #0xF
+   66 00000024 7001            STRB             R1, [R0]
+   67 00000026         
+   68 00000026 4911            LDR              R1, =GPIO_PORTE_DATA_R
+   69 00000028         loop
+   70 00000028         ;code that runs over and over
+   71 00000028         ;//pin0
+   72 00000028 780A            LDRB             R2, [R1]
+   73 0000002A F002 0201       AND              R2, #0x1
+   74 0000002E 780B            LDRB             R3, [R1]    ;//pin1
+   75 00000030 EA4F 0353       LSR              R3, #0x1
+   76 00000034 F003 0301       AND              R3, #0x1
+   77 00000038 780C            LDRB             R4, [R1]    ;//pin2
+   78 0000003A EA4F 0494       LSR              R4, #0x2
+   79 0000003E F004 0401       AND              R4, #0x1
+   80 00000042 EA82 0203       EOR              R2, R3
+   81 00000046 EA82 0204       EOR              R2, R4
+   82 0000004A EA4F 02C2       LSL              R2, #0x3
+   83 0000004E F082 0208       EOR              R2, #0x8    ;nots 4th bit
+   84 00000052         ;LDR R1, =GPIO_PORTE_DATA_R ;pin3
+   85 00000052 7808            LDRB             R0, [R1]
+   86 00000054 F000 00F7       AND              R0, #0xF7
+   87 00000058 EA40 0002       ORR              R0, R2
+   88 0000005C 7008            STRB             R0, [R1]
+   89 0000005E E7E3            B                loop
+   90 00000060         
+   91 00000060         
+   92 00000060         
+   93 00000060                 ALIGN                        ; make sure the end
+                                                             of this section is
+                                                             aligned
+   94 00000060                 END                          ; end of file
+              400FE608 
+
+
+
+ARM Macro Assembler    Page 3 
+
+
+              40024400 
+              4002451C 
+              400243FC 
+Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4 --apcs=interw
+ork --depend=.\main.d -o.\main.o -I.\RTE\_Lab1 -IC:\Users\adeel\AppData\Local\A
+rm\Packs\ARM\CMSIS\5.6.0\CMSIS\Core\Include -IC:\Users\adeel\AppData\Local\Arm\
+Packs\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123 --predefine="__EVAL SETA 1" --
+predefine="__UVISION_VERSION SETA 529" --predefine="_RTE_ SETA 1" --predefine="
+TM4C123GH6PM SETA 1" --list=.\main.lst main.s
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+DATA 00000000
+
+Symbol: DATA
+   Definitions
+      At line 42 in file main.s
+   Uses
+      None
+Comment: DATA unused
+1 symbol
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+.text 00000000
+
+Symbol: .text
+   Definitions
+      At line 45 in file main.s
+   Uses
+      None
+Comment: .text unused
+Start 00000000
+
+Symbol: Start
+   Definitions
+      At line 47 in file main.s
+   Uses
+      At line 46 in file main.s
+Comment: Start used once
+loop 00000028
+
+Symbol: loop
+   Definitions
+      At line 69 in file main.s
+   Uses
+      At line 89 in file main.s
+Comment: loop used once
+3 symbols
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Absolute symbols
+
+GPIO_PORTE_DATA_R 400243FC
+
+Symbol: GPIO_PORTE_DATA_R
+   Definitions
+      At line 36 in file main.s
+   Uses
+      At line 68 in file main.s
+Comment: GPIO_PORTE_DATA_R used once
+GPIO_PORTE_DEN_R 4002451C
+
+Symbol: GPIO_PORTE_DEN_R
+   Definitions
+      At line 38 in file main.s
+   Uses
+      At line 63 in file main.s
+Comment: GPIO_PORTE_DEN_R used once
+GPIO_PORTE_DIR_R 40024400
+
+Symbol: GPIO_PORTE_DIR_R
+   Definitions
+      At line 37 in file main.s
+   Uses
+      At line 57 in file main.s
+Comment: GPIO_PORTE_DIR_R used once
+SYSCTL_RCGCGPIO_R 400FE608
+
+Symbol: SYSCTL_RCGCGPIO_R
+   Definitions
+      At line 39 in file main.s
+   Uses
+      At line 49 in file main.s
+Comment: SYSCTL_RCGCGPIO_R used once
+4 symbols
+344 symbols in table

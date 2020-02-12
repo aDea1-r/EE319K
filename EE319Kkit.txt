@@ -1,0 +1,44 @@
+EE319K kits, Spring 2020
+Need 340 bags (340 students); 
+Each 20-hour TA should make 40 bags;  Each 10-hour TA should make 20 bags
+TAs hold onto bags; hand out one bag to each student during the board demo.
+Extra bags should be put into the Cabinet.
+
+Qty  Item   
+1    plastic bag                  need 400
+1    ULN2003B       
+3    RESISTOR, 1/4W 5%, 220 OHM,  need 2400 Digikey 220QBK-ND     $0.011       
+3    RESISTOR, 1/4W 5%, 10K OHM,  need 1200 Digikey 10KQBK-ND     $0.011       
+3    Resistor, 1/4W 5%, 12K ohm,  need 1200 Digikey 12KQBK-ND     $0.011       
+3    Resistor, 1/4W 5%, 1.5K ohm, need 1200 Digikey 1.5KQBK-ND    $0.011       
+3    Normally open SPST SWITCH    need 1200 BGMicro SWT1043       $0.08    
+1    Red LED, T1 3/4, 20mA        need 800  Digikey 160-1087-ND  $0.04640 each
+1    Yellow LED, T1 3/4, 20mA     need 800  Digikey 160-1088-ND  $0.04640 each
+1    Green LED, T1 3/4, 20mA      need 800  Digikey 160-1089-ND  $0.04640 each
+1    Slide Potentiometers         need 400  Mouser 652-PTA20432015CPB10, $0.68
+1    Stereo Jack                  need 400  Digikey CP1-3553NG-ND   $0.54
+EE319K students buy their own LCD. We expect students to use the ST7735R.
+
+Data Sheets for some of the devices
+http://users.ece.utexas.edu/~valvano/Volume1/ULN2003B.pdf
+http://users.ece.utexas.edu/~valvano/Datasheets/LED_red.pdf
+http://users.ece.utexas.edu/~valvano/Datasheets/LED_green.pdf
+http://users.ece.utexas.edu/~valvano/Datasheets/LED_yellow.pdf
+http://users.ece.utexas.edu/~valvano/Volume1/slidepot.pdf
+
+Other pot 
+Bourns	PTA2043-2015CPB103
+
+Other LED
+www.mpja.com 15108-OP 15308-OP 15309-OP
+
+Other jacks
+All Electronics CAT# SMJ-2, $0.50
+CONN JACK STEREO R/A 3PIN 3.5MM CUI SJ1-3553NG 
+ or BGMicro AUDCA015 $0.34 or Digikey CP1-3523NG-ND, CP1-3553NG-ND, 
+    BGMicro AUDCA017 $0.37
+
+
+
+
+

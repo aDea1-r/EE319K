@@ -1,0 +1,275 @@
+
+
+
+ARM Macro Assembler    Page 1 
+
+
+    1 00000000         ;****************** main.s ***************
+    2 00000000         ; Program written by: Valvano
+    3 00000000         ; Date Created: 8/25/2013 
+    4 00000000         ; Last Modified: 1/18/2019 
+    5 00000000         ; Section 1-2pm     TA: Saugata Bhattacharyya
+    6 00000000         ; Class example  PE1 = NOT(PE0)
+    7 00000000         ; Brief description of the program
+    8 00000000         ; The overall objective of this system is a digital NOT 
+                       gate
+    9 00000000         ; Hardware connections
+   10 00000000         ;  PE0 is switch input  (0 means false, 1 means true)
+   11 00000000         ;  PE1 is LED output (0 means false, 1 means true) 
+   12 00000000         
+   13 00000000 400243FC 
+                       GPIO_PORTE_DATA_R
+                               EQU              0x400243FC
+   14 00000000 40024400 
+                       GPIO_PORTE_DIR_R
+                               EQU              0x40024400
+   15 00000000 40024420 
+                       GPIO_PORTE_AFSEL_R
+                               EQU              0x40024420
+   16 00000000 4002451C 
+                       GPIO_PORTE_DEN_R
+                               EQU              0x4002451C
+   17 00000000 40024528 
+                       GPIO_PORTE_AMSEL_R
+                               EQU              0x40024528
+   18 00000000 4002452C 
+                       GPIO_PORTE_PCTL_R
+                               EQU              0x4002452C
+   19 00000000 400FE608 
+                       SYSCTL_RCGCGPIO_R
+                               EQU              0x400FE608
+   20 00000000         ;EE319K is about I/O
+   21 00000000         ;software
+   22 00000000         ; initialization
+   23 00000000         ;   clock
+   24 00000000         ;   direction Pin input/output
+   25 00000000         ;   enable
+   26 00000000         ; Input
+   27 00000000         ;   Read entire port
+   28 00000000         ;   Mask, AND to select
+   29 00000000         ; Output PE1 =1
+   30 00000000         ;   Write all bits of a GPIO_PORTE_DATA_R=0x02;
+   31 00000000         ; 0x02 00000010
+   32 00000000         ;   Read all of it
+   33 00000000         ;   Clear/set bits
+   34 00000000         ;   Write all bits
+   35 00000000                 AREA             DATA,ALIGN=2
+   36 00000000 00 00 00 
+              00       Data    SPACE            4
+   37 00000004                 AREA             |.text|, CODE, READONLY, ALIGN=
+2
+   38 00000000                 THUMB
+   39 00000000         SetDataTo5
+   40 00000000 480F            LDR              R0,=Data
+   41 00000002 F04F 0105       MOV              R1,#5       ; dollars
+   42 00000006 6001            STR              R1,[R0]     ; initialize Data
+
+
+
+ARM Macro Assembler    Page 2 
+
+
+   43 00000008 4770            BX               LR
+   44 0000000A         ;AND ORR EOR BIC
+   45 0000000A         InitF
+   46 0000000A         
+   47 0000000A         ; input
+   48 0000000A         ; read all, mask 0x11
+   49 0000000A         ; output?
+   50 0000000A         ;   1 read all
+   51 0000000A         ;   2set bits ORR
+   52 0000000A         ;    3 clear bit BIC
+   53 0000000A         ;    4 write all back
+   54 0000000A                 EXPORT           Start
+   55 0000000A         Start
+   56 0000000A F7FF FFF9       BL               SetDataTo5
+   57 0000000E         ;BL  InitF
+   58 0000000E         
+   59 0000000E 480D            LDR              R0,=SYSCTL_RCGCGPIO_R ; R0 poin
+                                                            ts to SYSCTL_RCGCGP
+                                                            IO_R
+   60 00000010 6801            LDR              R1,[R0]     ; read SYSCTL_RCGCG
+                                                            PIO_R into R1
+   61 00000012 F041 0110       ORR              R1,#0x10    ;turn on clock Bin:
+                                                             00010000
+   62 00000016 6001            STR              R1,[R0]     ; write back to SYS
+                                                            CTL_RCGCGPIO_R
+   63 00000018 BF00            NOP                          ; wait for clock to
+                                                             stabilize
+   64 0000001A BF00            NOP
+   65 0000001C 480A            LDR              R0,=GPIO_PORTE_DIR_R
+   66 0000001E F04F 0102       MOV              R1,#0x02    ;PE1 output, PE0 in
+                                                            put
+   67 00000022 6001            STR              R1,[R0]
+   68 00000024 4809            LDR              R0,=GPIO_PORTE_DEN_R
+   69 00000026 F04F 0103       MOV              R1,#0x03    ;enable PE1,PE0
+   70 0000002A 6001            STR              R1,[R0]
+   71 0000002C         
+   72 0000002C 4808            LDR              R0,=GPIO_PORTE_DATA_R 
+                                                            ;R0 = 0x400243FC
+   73 0000002E         loop
+   74 0000002E 6801            LDR              R1,[R0]     ;Read Port E
+   75 00000030 F001 0101       AND              R1,#1       ;mask, select PE0
+   76 00000034 F081 0101       EOR              R1,#1       ;NOT
+   77 00000038 EA4F 0141       LSL              R1,R1,#1    ;move to bit 1
+   78 0000003C 6001            STR              R1,[R0]     ;write Port E, sets
+                                                             PE1
+   79 0000003E         
+   80 0000003E E7F6            B                loop
+   81 00000040         
+   82 00000040         
+   83 00000040                 ALIGN                        ; make sure the end
+                                                             of this section is
+                                                             aligned
+   84 00000040                 END                          ; end of file
+              00000000 
+              400FE608 
+              40024400 
+              4002451C 
+              400243FC 
+Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4 --apcs=interw
+
+
+
+ARM Macro Assembler    Page 3 
+
+
+ork --depend=.\main.d -o.\main.o -I.\RTE\_NotGate -IC:\Users\adeel\AppData\Loca
+l\Arm\Packs\ARM\CMSIS\5.6.0\CMSIS\Core\Include -IC:\Users\adeel\AppData\Local\A
+rm\Packs\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123 --predefine="__EVAL SETA 1"
+ --predefine="__UVISION_VERSION SETA 529" --predefine="_RTE_ SETA 1" --predefin
+e="TM4C123GH6PM SETA 1" --list=.\main.lst main.s
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+DATA 00000000
+
+Symbol: DATA
+   Definitions
+      At line 35 in file main.s
+   Uses
+      None
+Comment: DATA unused
+Data 00000000
+
+Symbol: Data
+   Definitions
+      At line 36 in file main.s
+   Uses
+      At line 40 in file main.s
+Comment: Data used once
+2 symbols
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+.text 00000000
+
+Symbol: .text
+   Definitions
+      At line 37 in file main.s
+   Uses
+      None
+Comment: .text unused
+InitF 0000000A
+
+Symbol: InitF
+   Definitions
+      At line 45 in file main.s
+   Uses
+      None
+Comment: InitF unused
+SetDataTo5 00000000
+
+Symbol: SetDataTo5
+   Definitions
+      At line 39 in file main.s
+   Uses
+      At line 56 in file main.s
+Comment: SetDataTo5 used once
+Start 0000000A
+
+Symbol: Start
+   Definitions
+      At line 55 in file main.s
+   Uses
+      At line 54 in file main.s
+Comment: Start used once
+loop 0000002E
+
+Symbol: loop
+   Definitions
+      At line 73 in file main.s
+   Uses
+      At line 80 in file main.s
+Comment: loop used once
+5 symbols
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Absolute symbols
+
+GPIO_PORTE_AFSEL_R 40024420
+
+Symbol: GPIO_PORTE_AFSEL_R
+   Definitions
+      At line 15 in file main.s
+   Uses
+      None
+Comment: GPIO_PORTE_AFSEL_R unused
+GPIO_PORTE_AMSEL_R 40024528
+
+Symbol: GPIO_PORTE_AMSEL_R
+   Definitions
+      At line 17 in file main.s
+   Uses
+      None
+Comment: GPIO_PORTE_AMSEL_R unused
+GPIO_PORTE_DATA_R 400243FC
+
+Symbol: GPIO_PORTE_DATA_R
+   Definitions
+      At line 13 in file main.s
+   Uses
+      At line 72 in file main.s
+Comment: GPIO_PORTE_DATA_R used once
+GPIO_PORTE_DEN_R 4002451C
+
+Symbol: GPIO_PORTE_DEN_R
+   Definitions
+      At line 16 in file main.s
+   Uses
+      At line 68 in file main.s
+Comment: GPIO_PORTE_DEN_R used once
+GPIO_PORTE_DIR_R 40024400
+
+Symbol: GPIO_PORTE_DIR_R
+   Definitions
+      At line 14 in file main.s
+   Uses
+      At line 65 in file main.s
+Comment: GPIO_PORTE_DIR_R used once
+GPIO_PORTE_PCTL_R 4002452C
+
+Symbol: GPIO_PORTE_PCTL_R
+   Definitions
+      At line 18 in file main.s
+   Uses
+      None
+Comment: GPIO_PORTE_PCTL_R unused
+SYSCTL_RCGCGPIO_R 400FE608
+
+Symbol: SYSCTL_RCGCGPIO_R
+   Definitions
+      At line 19 in file main.s
+   Uses
+      At line 59 in file main.s
+Comment: SYSCTL_RCGCGPIO_R used once
+7 symbols
+350 symbols in table

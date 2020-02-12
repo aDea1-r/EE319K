@@ -1,0 +1,10 @@
+ 
+ HW2 grader-Spring 2019, EID=aur228
+ InitPB6 test Clock on,  PB6 output,  PB6 enabled, 
+ SetPB5 test PB6 is high, friendly
+ Inc16 test correct
+ Dec8 test correct
+ Set4Clear28 test correct
+ HW2 total score = 100
+ Magic code = bbBEfgCeDEBhBBFKnIfaOgHbJHbb
+
