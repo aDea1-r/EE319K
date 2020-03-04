@@ -1,7 +1,7 @@
 ;****************** main.s ***************
-; Program written by: **-UUU-*Your Names**update this***
+; Program written by: Adeel and Zach
 ; Date Created: 2/14/2017
-; Last Modified: 1/17/2020
+; Last Modified: 3/4/2020
 ; You are given a simple stepper motor software system with one input and
 ; four outputs. This program runs, but you are asked to add minimally intrusive
 ; debugging instruments to verify it is running properly. 
@@ -48,6 +48,18 @@ Index     SPACE 4 ; index into Stepper table 0,1,2,3
 Direction SPACE 4 ; -1 for CCW, 0 for stop 1 for CW
 
 ;place your debug variables in RAM here
+		ALIGN
+DATA_BUFFER
+		SPACE 100
+END_DATA_BUFFER
+		ALIGN
+TIME_BUFFER
+		SPACE 400
+END_TIME_BUFFER
+DataPtr SPACE 4
+TimePtr SPACE 4
+PREV_TIME
+		DCD 0x00FFFFFF
 
 ; ROM Area
         IMPORT TExaS_Init
@@ -72,6 +84,22 @@ Start
 ;**********************
       CPSIE  I    ; TExaS logic analyzer runs on interrupts
       MOV  R5,#0  ; last PA4
+	  
+	  LDR  R0, =SYSCTL_RCGCGPIO_R
+	  LDR  R1, [R0]
+	  ORR  R1, #0x20
+	  STR  R1, [R0]
+	  NOP
+	  NOP
+	  LDR  R0, =GPIO_PORTF_DIR_R
+	  LDR  R1, [R0]
+	  ORR  R1, #0x04
+	  STR  R1, [R0]
+	  LDR  R0, =GPIO_PORTF_DEN_R
+	  LDR  R1, [R0]
+	  ORR  R1, #0x04
+	  STR  R1, [R0]
+	  
 loop  
 
       LDR  R1,=GPIO_PORTA_DATA_R
@@ -91,8 +119,10 @@ loop
 ok    STR  R0,[R1] ; Direction=0 (CW)  
 no    MOV  R5,R4   ; setup for next time
       BL   Stepper_Step               
+	  BL   Heartbeat
       LDR  R0,=1600000
       BL   Wait  ; time delay fixed but not accurate   
+	  
       B    loop
 ;Initialize stepper motor interface
 Stepper_Init
@@ -170,12 +200,103 @@ Debug_Init
       PUSH {R0-R4,LR}
 ; you write this
 
+index RN R0
+len	  RN R1
+ones  RN R2
+
+      LDR index, =DATA_BUFFER
+	  ADD len, index, #100
+	  LDR ones, =0xFFFFFFFF
+	  
+	  ;fill VALS with FF's
+loop1 CMP len, index
+	  BEQ done1
+	  STR ones, [index]
+	  ADD index, index, #4
+	  B loop1
+done1 
+	  LDR index, =TIME_BUFFER
+	  ADD len, index, #400
+	  ;fill TIME with 0xFFFFFFFF's
+loop2 CMP len, index
+	  BEQ done2
+	  STR ones, [index]
+	  ADD index, index, #4
+	  B loop2
+done2 
+	  ;initialize array pointers
+	  LDR R0, =DATA_BUFFER
+	  LDR R1, =DataPtr
+	  STR R0, [R1]
+	  
+	  LDR R0, =TIME_BUFFER
+	  LDR R1, =TimePtr
+	  STR R0, [R1]
+	  
+	  BL SysTick_Init
+
       POP {R0-R4,PC}
 ;Debug capture      
+;28 instructions, 700ns,
+;Total: ~80,000,000 ns = 80 ms
+;Intrusiveness: 0.000875%
 Debug_Capture 
       PUSH {R0-R6,LR}
 ; you write this
 
+;index RN R0
+;len   RN R1
+idxPtr RN R2 ;index pointer
+value  RN R6 ;value to be stored in data/time buffer
+
+
+	  ;read data pointer
+	  LDR idxPtr, =DataPtr
+	  LDR index, [idxPtr]
+	  
+	  ;read data length
+	  LDR len, =END_DATA_BUFFER
+	  
+	  ;Return immediately if the buffers are full
+	  CMP index, len
+	  BEQ return
+	  
+	  ;read and mask data (PA4,PE3,PE2,PE1,PE0)
+	  LDR R5, =GPIO_PORTA_DATA_R
+	  LDRB R5, [R5]
+	  AND R5, R5, #0x10
+	  LDR R6, =GPIO_PORTE_DATA_R
+	  LDRB R6, [R6]
+	  AND R6, R6, #0x0F
+	  ORR value, R5, R6
+	  
+	  ;dump data, and incriment pointer
+	  STRB value, [index]
+	  ADD index, index, #1
+	  STR index, [idxPtr]
+	  
+	  ;read time array pointer
+	  LDR idxPtr, =TimePtr
+	  LDR index, [idxPtr]
+
+prev_time_ptr RN R5
+prev_time     RN R4
+
+	  ;read timer, update prev_time, and calculate delta t
+	  LDR R6, =NVIC_ST_CURRENT_R
+	  LDR value, [R6] ;(overides R6)
+	  LDR prev_time_ptr, =PREV_TIME
+	  LDR prev_time, [prev_time_ptr]
+	  STR value, [prev_time_ptr] ;value is currently used to store current time
+	  SUB value, prev_time, value
+	  AND value, value, #0x00FFFFFF
+	  
+	  ;dump deltaT, and incriment time pointer
+	  STR value, [index]
+	  ADD index, index, #4
+	  STR index, [idxPtr] 
+	  
+return
       POP  {R0-R6,PC}
       
 ; edit the following only if you need to move pins from PA4, PE3-0      
@@ -194,6 +315,13 @@ SendDataToLogicAnalyzer
      STR  R0,[R1] ; send data at 10 kHz
      BX   LR
 
+Heartbeat
+	 LDR R0, =GPIO_PORTF_DATA_R
+	 LDR R1, [R0]
+	 MOV R2, #0x04
+	 EOR R1, R2, R1
+	 STR R1, [R0]
+	 BX  LR
 
      ALIGN    ; make sure the end of this section is aligned
      END      ; end of file

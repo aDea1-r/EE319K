@@ -1,0 +1,138 @@
+
+
+
+ARM Macro Assembler    Page 1 
+
+
+    1 00000000         ; SysTick.s
+    2 00000000         ; Module written by: Adeel and Zach
+    3 00000000         ; Date Created: 2/14/2017
+    4 00000000         ; Last Modified: 03/04/2020 
+    5 00000000         ; Brief Description: Initializes SysTick
+    6 00000000         
+    7 00000000 E000E010 
+                       NVIC_ST_CTRL_R
+                               EQU              0xE000E010
+    8 00000000 E000E014 
+                       NVIC_ST_RELOAD_R
+                               EQU              0xE000E014
+    9 00000000 E000E018 
+                       NVIC_ST_CURRENT_R
+                               EQU              0xE000E018
+   10 00000000         
+   11 00000000                 AREA             |.text|, CODE, READONLY, ALIGN=
+2
+   12 00000000                 THUMB
+   13 00000000         ; -UUU- You add code here to export your routine(s) from
+                        SysTick.s to main.s
+   14 00000000                 EXPORT           SysTick_Init
+   15 00000000         ;------------SysTick_Init------------
+   16 00000000         ; ;-UUU-Complete this subroutine
+   17 00000000         ; Initialize SysTick running at bus clock.
+   18 00000000         ; Make it so NVIC_ST_CURRENT_R can be used as a 24-bit t
+                       ime
+   19 00000000         ; Input: none
+   20 00000000         ; Output: none
+   21 00000000         ; Modifies: R0 & R1
+   22 00000000         SysTick_Init
+   23 00000000         ; **-UUU-**Implement this function****
+   24 00000000         
+   25 00000000         ;disable timer for init
+   26 00000000 4808            LDR              R0, =NVIC_ST_CTRL_R
+   27 00000002 F04F 0100       MOV              R1, #0
+   28 00000006 6001            STR              R1, [R0]
+   29 00000008         
+   30 00000008         ;mov reload value (max is 0x00FFFFFF for continuous oper
+                       ation)
+   31 00000008 4807            LDR              R0, =NVIC_ST_RELOAD_R
+   32 0000000A F06F 417F       LDR              R1, =0x00FFFFFF
+   33 0000000E 6001            STR              R1, [R0]
+   34 00000010         
+   35 00000010         ;clear counter
+   36 00000010 4806            LDR              R0, =NVIC_ST_CURRENT_R
+   37 00000012 F04F 0100       MOV              R1, #0
+   38 00000016 6001            STR              R1, [R0]
+   39 00000018         
+   40 00000018         ;start timer
+   41 00000018 4802            LDR              R0, =NVIC_ST_CTRL_R
+   42 0000001A F04F 0105       MOV              R1, #5
+   43 0000001E 6001            STR              R1, [R0]
+   44 00000020         
+   45 00000020 4770            BX               LR          ; return
+   46 00000022         
+   47 00000022         
+   48 00000022 00 00           ALIGN                        ; make sure the end
+                                                             of this section is
+
+
+
+ARM Macro Assembler    Page 2 
+
+
+                                                             aligned
+   49 00000024                 END                          ; end of file
+              E000E010 
+              E000E014 
+              E000E018 
+Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4 --apcs=interw
+ork --depend=.\systick.d -o.\systick.o -I.\RTE\_Lab4 -IC:\Users\adeel\AppData\L
+ocal\Arm\Packs\ARM\CMSIS\5.6.0\CMSIS\Core\Include -IC:\Users\adeel\AppData\Loca
+l\Arm\Packs\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123 --predefine="__EVAL SETA
+ 1" --predefine="__UVISION_VERSION SETA 529" --predefine="_RTE_ SETA 1" --prede
+fine="TM4C123GH6PM SETA 1" --list=.\systick.lst SysTick.s
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+.text 00000000
+
+Symbol: .text
+   Definitions
+      At line 11 in file SysTick.s
+   Uses
+      None
+Comment: .text unused
+SysTick_Init 00000000
+
+Symbol: SysTick_Init
+   Definitions
+      At line 22 in file SysTick.s
+   Uses
+      At line 14 in file SysTick.s
+Comment: SysTick_Init used once
+2 symbols
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Absolute symbols
+
+NVIC_ST_CTRL_R E000E010
+
+Symbol: NVIC_ST_CTRL_R
+   Definitions
+      At line 7 in file SysTick.s
+   Uses
+      At line 26 in file SysTick.s
+      At line 41 in file SysTick.s
+
+NVIC_ST_CURRENT_R E000E018
+
+Symbol: NVIC_ST_CURRENT_R
+   Definitions
+      At line 9 in file SysTick.s
+   Uses
+      At line 36 in file SysTick.s
+Comment: NVIC_ST_CURRENT_R used once
+NVIC_ST_RELOAD_R E000E014
+
+Symbol: NVIC_ST_RELOAD_R
+   Definitions
+      At line 8 in file SysTick.s
+   Uses
+      At line 31 in file SysTick.s
+Comment: NVIC_ST_RELOAD_R used once
+3 symbols
+341 symbols in table
