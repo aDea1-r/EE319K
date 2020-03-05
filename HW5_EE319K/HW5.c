@@ -3,14 +3,26 @@
 // Spring 2020 EE319K
 // You will implement the mode function
 #include <stdint.h>
-char myEID[]="jwv1234"; // edit this line with your student EID
+#include <string.h>
+char myEID[]="aur228"; // edit this line with your student EID
 char Semester[]="Spring 2020";
 
 
 char mode(const char string[30]){ 
 // write this function
-
-  return 42;   // remove this line and add your solution here
+	int count[26];
+	for (int i=0; i<26; i++) {
+		count[i] = 0; 
+	}
+  for (int i=0; i < 30; i++) {
+		count[ string[i] - 97] ++; 
+	}
+	int maxIndex = 0;
+	for (int i=1; i<26; i++) {
+		if (count[i] > count[maxIndex])
+			maxIndex = i;
+	}
+	return maxIndex + 97; 
 }
 
 
