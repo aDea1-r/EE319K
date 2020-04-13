@@ -1,0 +1,1 @@
+.\song.o: song.c

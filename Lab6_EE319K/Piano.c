@@ -13,12 +13,23 @@
 // this file also contains an private functions and private data
 #include <stdint.h>
 #include "../inc/tm4c123gh6pm.h"
+#include "Lab6.h"
 
 // **************Piano_Init*********************
 // Initialize four piano key inputs, called once to initialize the digital ports
 // Input: none 
 // Output: none
-void Piano_Init(void){ }
+void Piano_Init(void){ 
+	SYSCTL_RCGCGPIO_R |= 0x10; 
+	
+	__asm__ {
+		NOP
+		NOP
+	}
+	
+	GPIO_PORTE_DIR_R &= ~(0x0F);
+	GPIO_PORTE_DEN_R |= 0x0F;
+}
 
 // **************Piano_In*********************
 // Input from piano key inputs 
@@ -26,6 +37,6 @@ void Piano_Init(void){ }
 // Output: 0 to 15 depending on keys
 //   0x01 is just Key0, 0x02 is just Key1, 0x04 is just Key2, 0x08 is just Key3
 //   bit n is set if key n is pressed
-uint32_t Piano_In(void){
-  return 0; // Replace with your code
+uint32_t Piano_In(void){	
+	return GPIO_PORTE_DATA_R & 0x0F; // Replace with your code
 }

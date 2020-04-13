@@ -44,7 +44,6 @@ volatile unsigned long *PortDataAddr; // pointer to data
 #define NVIC_EN2_R              (*((volatile unsigned long *)0xE000E108))
 #define NVIC_DIS2_R             (*((volatile unsigned long *)0xE000E188))
 
-
 #define TIMER5_CFG_R            (*((volatile unsigned long *)0x40035000))
 #define TIMER5_TAMR_R           (*((volatile unsigned long *)0x40035004))
 #define TIMER5_TBMR_R           (*((volatile unsigned long *)0x40035008))

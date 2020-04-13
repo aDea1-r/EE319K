@@ -29,19 +29,33 @@
 #define NVIC_ST_CURRENT_R   (*((volatile unsigned long *)0xE000E018))
 void SysTick_Init(void){
 	// write this
+	NVIC_ST_CTRL_R = 0;
+	NVIC_ST_CTRL_R = 5;
+
 }
 // The delay parameter is in units of the 80 MHz core clock. (12.5 ns)
 void SysTick_Wait(uint32_t delay){
 	// write this
+	NVIC_ST_RELOAD_R = delay-1;
+  NVIC_ST_CURRENT_R = 0;
+  while((NVIC_ST_CTRL_R&0x00010000)==0){
+  }
 }
 // The delay parameter is in ms.
 // 80000 bus cycles equals 1ms
 void SysTick_Wait1ms(uint32_t delay){
 	// write this
+	unsigned long i;
+  for(i=0; i<delay; i++){
+    SysTick_Wait(80000);  
+	}
 }
 
 // 800000 bus cycles equals 10ms
 void SysTick_Wait10ms(unsigned long delay){
 	// write this
+	unsigned long i;
+  for(i=0; i<delay; i++){
+    SysTick_Wait(800000);  // wait 10ms
+	}
 }
-

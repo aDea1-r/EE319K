@@ -1,0 +1,32 @@
+Dependencies for Project 'Lab6', Target 'Lab6': (DO NOT MODIFY !)
+CompilerVersion: 5060750::V5.06 update 6 (build 750)::ARMCC
+F (.\startup.s)(0x56F190AE)(--cpu Cortex-M4 --pd "__EVAL SETA 1" -g --apcs=interwork -I.\RTE\_Lab6-IC:\Users\adeel\AppData\Local\Arm\Packs\ARM\CMSIS\5.6.0\CMSIS\Core\Include-IC:\Users\adeel\AppData\Local\Arm\Packs\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123--pd "__UVISION_VERSION SETA 529" --pd "_RTE_ SETA 1" --pd "TM4C123GH6PM SETA 1"--list .\startup.lst --xref -o .\startup.o --depend .\startup.d)
+F (.\Lab6.c)(0x5E8F4F53)(-c --cpu Cortex-M4 -D__EVAL -g -O0 --apcs=interwork --split_sections --signed_chars -I .. -I ..\..\.. --C99-I.\RTE\_Lab6-IC:\Users\adeel\AppData\Local\Arm\Packs\ARM\CMSIS\5.6.0\CMSIS\Core\Include-IC:\Users\adeel\AppData\Local\Arm\Packs\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-D__UVISION_VERSION="529" -D_RTE_ -DTM4C123GH6PM -Drvmdk -DPART_LM4F120H5QR-o .\lab6.o --omf_browse .\lab6.crf --depend .\lab6.d)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9B96F8)
+I (../inc/tm4c123gh6pm.h)(0x5388C2DA)
+I (Sound.h)(0x5E21EFC6)
+I (Piano.h)(0x5E21EF5C)
+I (TExaS.h)(0x5E21EFD2)
+I (dac.h)(0x5E8E7709)
+F (.\Sound.c)(0x5E8F1124)(-c --cpu Cortex-M4 -D__EVAL -g -O0 --apcs=interwork --split_sections --signed_chars -I .. -I ..\..\.. --C99-I.\RTE\_Lab6-IC:\Users\adeel\AppData\Local\Arm\Packs\ARM\CMSIS\5.6.0\CMSIS\Core\Include-IC:\Users\adeel\AppData\Local\Arm\Packs\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-D__UVISION_VERSION="529" -D_RTE_ -DTM4C123GH6PM -Drvmdk -DPART_LM4F120H5QR-o .\sound.o --omf_browse .\sound.crf --depend .\sound.d)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9B96F8)
+I (dac.h)(0x5E8E7709)
+I (../inc/tm4c123gh6pm.h)(0x5388C2DA)
+F (.\dac.c)(0x5E8E80B4)(-c --cpu Cortex-M4 -D__EVAL -g -O0 --apcs=interwork --split_sections --signed_chars -I .. -I ..\..\.. --C99-I.\RTE\_Lab6-IC:\Users\adeel\AppData\Local\Arm\Packs\ARM\CMSIS\5.6.0\CMSIS\Core\Include-IC:\Users\adeel\AppData\Local\Arm\Packs\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-D__UVISION_VERSION="529" -D_RTE_ -DTM4C123GH6PM -Drvmdk -DPART_LM4F120H5QR-o .\dac.o --omf_browse .\dac.crf --depend .\dac.d)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9B96F8)
+I (../inc/tm4c123gh6pm.h)(0x5388C2DA)
+F (.\Piano.c)(0x5E8EA9C5)(-c --cpu Cortex-M4 -D__EVAL -g -O0 --apcs=interwork --split_sections --signed_chars -I .. -I ..\..\.. --C99-I.\RTE\_Lab6-IC:\Users\adeel\AppData\Local\Arm\Packs\ARM\CMSIS\5.6.0\CMSIS\Core\Include-IC:\Users\adeel\AppData\Local\Arm\Packs\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-D__UVISION_VERSION="529" -D_RTE_ -DTM4C123GH6PM -Drvmdk -DPART_LM4F120H5QR-o .\piano.o --omf_browse .\piano.crf --depend .\piano.d)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9B96F8)
+I (../inc/tm4c123gh6pm.h)(0x5388C2DA)
+I (Lab6.h)(0x5E8EA4EC)
+F (.\Lab6.h)(0x5E8EA4EC)()
+F (.\MIDI_Reader.c)(0x5E8F322D)(-c --cpu Cortex-M4 -D__EVAL -g -O0 --apcs=interwork --split_sections --signed_chars -I .. -I ..\..\.. --C99-I.\RTE\_Lab6-IC:\Users\adeel\AppData\Local\Arm\Packs\ARM\CMSIS\5.6.0\CMSIS\Core\Include-IC:\Users\adeel\AppData\Local\Arm\Packs\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-D__UVISION_VERSION="529" -D_RTE_ -DTM4C123GH6PM -Drvmdk -DPART_LM4F120H5QR-o .\midi_reader.o --omf_browse .\midi_reader.crf --depend .\midi_reader.d)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5D9B96F8)
+I (song.h)(0x5E8F128D)
+I (../inc/tm4c123gh6pm.h)(0x5388C2DA)
+I (Sound.h)(0x5E21EFC6)
+I (Piano.h)(0x5E21EF5C)
+I (TExaS.h)(0x5E21EFD2)
+I (dac.h)(0x5E8E7709)
+F (.\song.h)(0x5E8F128D)()
+F (.\texas.o)(0x56F190AE)()

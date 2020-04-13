@@ -7,7 +7,7 @@
 // Last Modified: 1/17/2020 
 // Lab number: 6
 // Hardware connections
-// TO STUDENTS "REMOVE THIS LINE AND SPECIFY YOUR HARDWARE********
+// PORTB 0-5: DAC output (lowest bit to lowest pin)
 
 #include <stdint.h>
 #include "../inc/tm4c123gh6pm.h"
@@ -15,17 +15,27 @@
 // this file also contains an private functions and private data
 
 // **************DAC_Init*********************
-// Initialize 4-bit DAC, called once 
+// Initialize 6-bit DAC, called once 
 // Input: none
 // Output: none
 void DAC_Init(void){
-
+	SYSCTL_RCGCGPIO_R |= 0x02; 
+	
+	__asm__ {
+		NOP
+		NOP
+	}
+	
+	GPIO_PORTB_DIR_R |= 0x3F;
+	GPIO_PORTB_DEN_R |= 0x3F;
+	
 }
 
 // **************DAC_Out*********************
 // output to DAC
-// Input: 4-bit data, 0 to 15 
+// Input: 6-bit data, 0 to 63
 // Input=n is converted to n*3.3V/15
 // Output: none
-void DAC_Out(uint32_t data){
+void DAC_Out(uint8_t data){
+	GPIO_PORTB_DATA_R = data;
 }

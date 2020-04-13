@@ -1,7 +1,7 @@
 // StepperMotorController.c starter file EE319K HW6 
 // Runs on TM4C123
-// Jonathan Valvano
-// 1/17/2019
+// Adeel Rehman
+// 4/6/2020
 /*
 ; You are given a simple stepper motor software system with one input and
 ; four outputs. This program runs, but you are asked to add minimally intrusive
@@ -37,13 +37,41 @@ void EnableInterrupts(void);
 // write these three functions
 // Initialize SysTick with RELOAD at 0xFFFFFF running at bus clock.
 void SysTick_Init(void){
-  // write this
+  NVIC_ST_CTRL_R = 0;
+	NVIC_ST_RELOAD_R = 0xFFFFFF;
+	NVIC_ST_CURRENT_R = 0;
+	NVIC_ST_CTRL_R = 0x5; 
+	
 }
+
+int prevTime = 0;
+int timeBuffer[100];
+uint8_t dataBuffer[100];
+int spot = 0;
 void Debug_Init(void){
-    // write this
+	int i;
+	for(i=0; i<100; i++) {
+		timeBuffer[i] = 0xFFFFFFFF;
+		dataBuffer[i] = 0xFF; 
+	}
+	SysTick_Init(); 
 }
+ 
 void Debug_Capture(void){
-    // write this
+  int time = prevTime - NVIC_ST_CURRENT_R;
+	
+	int portE = (GPIO_PORTE_DATA_R & 0x0F);
+	int portA = GPIO_PORTA_DATA_R & 0x10;
+	int data = portE | portA;
+	
+	if(spot >= 100)
+		return; 
+	
+	time &= 0x00FFFFFF;
+	timeBuffer[spot] = time;
+	dataBuffer[spot] = data; 
+	
+	spot++;
 }
 
 
