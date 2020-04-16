@@ -1,6 +1,6 @@
 ; LCD.s
-; Student names: change this to your names or look very silly
-; Last modification date: change this to the last modification date or look very silly
+; Student names: Zachary Bouthillette and Adeel Rehman
+; Last modification date: 4/15/20
 
 ; Runs on LM4F120/TM4C123
 ; Use SSI0 to send an 8-bit code to the ST7735 160x128 pixel LCD.
@@ -29,8 +29,10 @@ SSI_SR_BSY              EQU   0x00000010  ; SSI Busy Bit
 SSI_SR_TNF              EQU   0x00000002  ; SSI Transmit FIFO Not Full
 
       EXPORT   writecommand
+	  
       EXPORT   writedata
-
+		  
+		  
       AREA    |.text|, CODE, READONLY, ALIGN=2
       THUMB
       ALIGN
@@ -65,10 +67,29 @@ writecommand
 ;4) Write the command to SSI0_DR_R
 ;5) Read SSI0_SR_R and check bit 4, 
 ;6) If bit 4 is high, loop back to step 5 (wait for BUSY bit to be low)
-
-    
-    
-    BX  LR                          ;   return
+	  LDR R1, =SSI0_SR_R
+loop  LDR R2, [R1]
+	  LSR R2, R2, #4
+	  AND R2, R2, #1
+	  ADDS R2, R2, #0
+	  BNE loop
+	  
+	  LDR R1, =DC
+	  LDR R2, [R1]
+	  AND R2, R2, #0xBF 
+	  STR R2, [R1]
+	  
+	  LDR R1, =SSI0_DR_R
+	  STRB R0, [R1]
+	  
+	  LDR R1, =SSI0_SR_R
+loop2 LDR R2, [R1]
+	  LSR R2, R2, #4
+	  AND R2, R2, #1
+	  ADDS R2, R2, #0
+	  BNE loop2
+	  
+      BX  LR                          ;   return
 
 ; This is a helper function that sends an 8-bit data to the LCD.
 ; Input: R0  8-bit data to transmit
@@ -80,10 +101,22 @@ writedata
 ;2) If bit 1 is low loop back to step 1 (wait for TNF bit to be high)
 ;3) Set D/C=PA6 to one
 ;4) Write the 8-bit data to SSI0_DR_R
-
-    
-    
-    BX  LR                          ;   return
+	  LDR R1, =SSI0_SR_R
+loop3 LDR R2, [R1]
+	  LSR R2, R2, #1
+	  AND R2, R2, #1
+	  ADDS R2, R2, #0
+	  BEQ loop3
+	  
+	  LDR R1, =DC
+	  LDR R2, [R1]
+	  ORR R2, R2, #0x40
+	  STR R2, [R1]
+	  
+	  LDR R1, =SSI0_DR_R
+	  STRB R0, [R1]
+	  
+      BX  LR                          ;   return
 
 
 ;***************************************************

@@ -109,8 +109,9 @@ int main(void){
   IO_Init();
   
   // test DrawChar() and DrawCharS()
-  ST7735_InitR(INITR_REDTAB);
-  ST7735_OutString("Lab 7 Fall 2019\nWelcome to EE319K");
+  ST7735_InitR(INITR_GREENTAB);
+  ST7735_OutString("Lab 7 Spring 2020\nWelcome to EE319K");
+	//ST7735_OutString("HW");
   IO_Touch();
 
   ST7735_FillScreen(0xFFFF);   // set screen to white
