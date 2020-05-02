@@ -9,15 +9,17 @@
 #define SLIDEPOT_H
 #include <stdint.h>
 
-class SlidePot{ private:
+class SlidePot{ 
+private:
   uint32_t data;     // raw ADC value
   int32_t flag;      // 0 if data is not valid, 1 if valid
   uint32_t distance; // distance in 0.001cm
 // distance = (slope*data+offset)/4096
-  uint32_t slope;    // calibration coeffients
+  uint32_t slopeNumerator;    // calibration coeffients
+	uint32_t slopeDenominator;
   uint32_t offset;
 public:
-  SlidePot(uint32_t m, uint32_t b); // initialize slide pot
+  SlidePot(uint32_t mT, uint32_t mD, uint32_t b); // initialize slide pot
   void Save(uint32_t n);        // save ADC, set semaphore
   void Sync(void);              // wait for semaphore
   uint32_t Convert(uint32_t n); // convert ADC to raw sample

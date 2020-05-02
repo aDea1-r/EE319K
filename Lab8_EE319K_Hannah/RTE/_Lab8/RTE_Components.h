@@ -3,8 +3,8 @@
  * Auto generated Run-Time-Environment Configuration File
  *      *** Do not modify ! ***
  *
- * Project: 'Lab8_C++' 
- * Target:  'Lab 8' 
+ * Project: 'Lab8' 
+ * Target:  'Lab8' 
  */
 
 #ifndef RTE_COMPONENTS_H

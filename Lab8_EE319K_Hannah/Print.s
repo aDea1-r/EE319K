@@ -1,6 +1,6 @@
 ; Print.s
-; Student names: Zachary Bouthillette and Adeel Rehman
-; Last modification date: 4/15/20
+; Student names: change this to your names or look very silly
+; Last modification date: change this to the last modification date or look very silly
 ; Runs on LM4F120 or TM4C123
 ; EE319K lab 7 device driver for any LCD
 ;
@@ -13,7 +13,8 @@
     IMPORT   ST7735_OutString
     EXPORT   LCD_OutDec
     EXPORT   LCD_OutFix
-
+number	EQU 0
+length EQU 4 
     AREA    |.text|, CODE, READONLY, ALIGN=2
     THUMB
 
@@ -24,28 +25,31 @@
 ; Input: R0 (call by value) 32-bit unsigned number
 ; Output: none
 ; Invariables: This function must not permanently modify registers R4 to R11
-; Lab 7 requirement is for at least one local variable on the stack with symbolic binding
 LCD_OutDec
-	
-	MOV R3, #10
-	UDIV R1, R0, R3 ;find remaining digits to print
-	
-	MUL R2, R1, R3 ;find calculate digit to print (put in R0)
-	SUB R0, R0, R2
-	
-	PUSH {R0, LR}
-	MOVS R0, R1
-	BEQ af
-	BL LCD_OutDec
-af	POP {R0, LR}
-	
-	ADD R0, R0, #0x30
-	PUSH {R0, LR}
-	BL ST7735_OutChar
-	POP {R0, LR}
+    PUSH {LR, R0}
+	; ******Allocation Phase*******	
+		SUB SP, #8 
 
+	; *****Access Phase*******
+		CMP R0, #10
+		BLO lowDec
+		MOV R3, #0xA
+		UDIV R2, R0, R3
+		MLS R1, R2, R3, R0 
+		MOV R0, R2
+		STR R1, [SP, #number]
+		BL LCD_OutDec
+		LDR R0, [SP, #number]
+		ADD R0, #48
+		BL ST7735_OutChar
+		B retDec
+lowDec	ADD R0, #48
+		BL ST7735_OutChar
+
+	;****Deallocation Phase*****	
+retDec 	ADD SP, #8
+		POP {LR, R0}
       BX  LR
-	
 ;* * * * * * * * End of LCD_OutDec * * * * * * * *
 
 ; -----------------------LCD _OutFix----------------------
@@ -54,73 +58,62 @@ af	POP {R0, LR}
 ; Inputs:  R0 is an unsigned 32-bit number
 ; Outputs: none
 ; E.g., R0=0,    then output "0.00 "
-;       R0=3,    then output "0.003 "
+;       R0=3,    then output "0.03 "
 ;       R0=89,   then output "0.89 "
 ;       R0=123,  then output "1.23 "
 ;       R0=999,  then output "9.99 "
 ;       R0>999,  then output "*.** "
 ; Invariables: This function must not permanently modify registers R4 to R11
-; Lab 7 requirement is for at least one local variable on the stack with symbolic binding
 LCD_OutFix
-dec0    EQU 0
-int 	EQU 4
-dec1	EQU 8
-Link	EQU 12
-		ADD SP, SP, #16
-		MOV R11, SP
-		STR LR, [R11,#Link]
-		
-		LDR R1, =999
-		CMP R0, R1
-		BHI overflow
-		
-		MOV R1, #10
-		PUSH {R0, R1}
-		BL MOD
-		STR R0, [R11, #dec0]
-		POP {R0, R1}
-		PUSH {R0, R1}
-		UDIV R0, R0, R1
-		BL MOD
-		STR R0, [R11, #dec1]
-		POP {R0, R1}
-		MOV R1, #100
-		UDIV R0, R0, R1
-		STR R0, [R11, #int]
-		
-		LDR R0, [R11, #int]
-		BL LCD_OutDec
-		MOV R0, #'.'
-		BL ST7735_OutChar
-		LDR R0, [R11, #dec1]
-		BL LCD_OutDec
-		LDR R0, [R11, #dec0]
-		BL LCD_OutDec
-		
-		B done
-overflow
-		MOV R0, #'*'
-		BL ST7735_OutChar
-		MOV R0, #'.'
-		BL ST7735_OutChar
-		MOV R0, #'*'
-		BL ST7735_OutChar
-		MOV R0, #'*'
-		BL ST7735_OutChar
-		
-done	LDR LR, [R11, #Link]
-		SUB SP, SP, #16
+    MOV R1, #0
+LCD_OutFix_Wrap
+	PUSH {LR, R4, R1, R0}
+	
+; ******Allocation Phase*******	
+	SUB SP, #8 ; Allocate num
 
-		BX   LR
+; *****Access Phase*******
+		MOV R4, #10000
+		CMP R0, R4
+		BHS error
+		CMP R1, #4
+		BEQ retFix
+		MOV R3, #0xA
+		UDIV R2, R0, R3
+		MLS R4, R2, R3, R0 
+		MOV R0, R2
+		STR R4, [SP, #number]
+		STR R1, [SP, #length]
+		ADD R1, #1
+		BL LCD_OutFix_Wrap
+		LDR R0, [SP, #number]
+		ADD R0, #48
+		BL ST7735_OutChar
+		LDR R1, [SP, #length]
+		CMP R1, #3
+		BNE retFix
+		MOV R0, #0x2E
+		BL ST7735_OutChar
+		B retFix
 		
-MOD
-	UDIV R2, R0, R1
-	MUL R2, R2, R1
-	SUB R0, R0, R2
-	BX LR
+error   MOV R0, #0x2A
+		BL ST7735_OutChar
+		MOV R0, #0x2E
+		BL ST7735_OutChar
+		MOV R0, #0x2A
+		BL ST7735_OutChar
+		MOV R0, #0x2A
+		BL ST7735_OutChar
+		MOV R0, #0x2A
+		BL ST7735_OutChar
+
+;****Deallocation Phase*****	
+retFix	ADD SP, #8
+		POP {LR, R4, R1, R0}
+     BX   LR
  
-     ALIGN
+     
 ;* * * * * * * * End of LCD_OutFix * * * * * * * *
 
-     ALIGN          ; make sure the end of this section is aligned
-     END            ; end of file
+     ALIGN                           ; make sure the end of this section is aligned
+     END                             ; end of file

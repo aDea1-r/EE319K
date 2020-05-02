@@ -21,16 +21,15 @@
 // Low level drivers for the ST7735 160x128 LCD based off of
 // the file described above.
 //    16-bit color, 128 wide by 160 high LCD
-// Daniel Valvano, 
-// March 5, 2018
+// Daniel Valvano, 1/17/2020
 // Augmented 7/17/2014 to have a simple graphics facility
-// Tested with LaunchPadDLL.dll simulator 9/2/2014
+// Tested with LaunchPadDLL.dll simulator 10/25/2017
 
 /* This example accompanies the book
    "Embedded Systems: Real Time Interfacing to Arm Cortex M Microcontrollers",
-   ISBN: 978-1463590154, Jonathan Valvano, copyright (c) 2017
+   ISBN: 978-1463590154, Jonathan Valvano, copyright (c) 2019
 
- Copyright 2018 by Jonathan W. Valvano, valvano@mail.utexas.edu
+ Copyright 2019 by Jonathan W. Valvano, valvano@mail.utexas.edu
     You may use, edit, run or distribute this file
     as long as the above copyright notice remains
  THIS SOFTWARE IS PROVIDED "AS IS".  NO WARRANTIES, WHETHER EXPRESS, IMPLIED
@@ -42,6 +41,9 @@
  http://users.ece.utexas.edu/~valvano/
  */
 
+// hardware connections
+// **********ST7735 TFT and SDC*******************
+// ST7735
 // Backlight (pin 10) connected to +3.3 V
 // MISO (pin 9) unconnected
 // SCK (pin 8) connected to PA2 (SSI0Clk)
@@ -53,9 +55,59 @@
 // VCC (pin 2) connected to +3.3 V
 // Gnd (pin 1) connected to ground
 
-#ifndef _ST7735H_
-#define _ST7735H_
+// **********wide.hk ST7735R with ADXL345 accelerometer *******************
+// Silkscreen Label (SDC side up; LCD side down) - Connection
+// VCC  - +3.3 V
+// GND  - Ground
+// !SCL - PA2 Sclk SPI clock from microcontroller to TFT or SDC
+// !SDA - PA5 MOSI SPI data from microcontroller to TFT or SDC
+// DC   - PA6 TFT data/command
+// RES  - PA7 TFT reset
+// CS   - PA3 TFT_CS, active low to enable TFT
+// *CS  - (NC) SDC_CS, active low to enable SDC
+// MISO - (NC) MISO SPI data from SDC to microcontroller
+// SDA  – (NC) I2C data for ADXL345 accelerometer
+// SCL  – (NC) I2C clock for ADXL345 accelerometer
+// SDO  – (NC) I2C alternate address for ADXL345 accelerometer
+// Backlight + - Light, backlight connected to +3.3 V
 
+// **********wide.hk ST7735R with ADXL335 accelerometer *******************
+// Silkscreen Label (SDC side up; LCD side down) - Connection
+// VCC  - +3.3 V
+// GND  - Ground
+// !SCL - PA2 Sclk SPI clock from microcontroller to TFT or SDC
+// !SDA - PA5 MOSI SPI data from microcontroller to TFT or SDC
+// DC   - PA6 TFT data/command
+// RES  - PA7 TFT reset
+// CS   - PA3 TFT_CS, active low to enable TFT
+// *CS  - (NC) SDC_CS, active low to enable SDC
+// MISO - (NC) MISO SPI data from SDC to microcontroller
+// X– (NC) analog input X-axis from ADXL335 accelerometer
+// Y– (NC) analog input Y-axis from ADXL335 accelerometer
+// Z– (NC) analog input Z-axis from ADXL335 accelerometer
+// Backlight + - Light, backlight connected to +3.3 V
+
+
+// **********HiLetgo ST7735 TFT and SDC (SDC not tested)*******************
+// ST7735
+// LED-   (pin 16) TFT, connected to ground
+// LED+   (pin 15) TFT, connected to +3.3 V
+// SD_CS  (pin 14) SDC, chip select
+// MOSI   (pin 13) SDC, MOSI
+// MISO   (pin 12) SDC, MISO
+// SCK    (pin 11) SDC, serial clock
+// CS     (pin 10) TFT, PA3 (SSI0Fss)
+// SCL    (pin 9)  TFT, SCK  PA2 (SSI0Clk)
+// SDA    (pin 8)  TFT, MOSI PA5 (SSI0Tx)
+// A0     (pin 7)  TFT, Data/Command PA6 (GPIO), high for data, low for command
+// RESET  (pin 6)  TFT, to PA7 (GPIO)
+// NC     (pins 3,4,5) not connected
+// VCC    (pin 2)  connected to +3.3 V
+// GND    (pin 1)  connected to ground
+
+
+#ifndef ST7735_H
+#define ST7735_H
 #include <stdint.h>
 
 // some flags for ST7735_InitR()
@@ -150,6 +202,26 @@ void ST7735_FillScreen(uint16_t color);
 // Output: none
 void ST7735_FillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
 
+
+//------------ST7735_DrawSmallCircle------------
+// Draw a small circle (diameter of 6 pixels)
+// rectangle at the given coordinates with the given color.
+// Requires (11*6+24*2)=114 bytes of transmission (assuming image fully on screen)
+// Input: x     horizontal position of the top left corner of the circle, columns from the left edge
+//        y     vertical position of the top left corner of the circle, rows from the top edge
+//        color 16-bit color, which can be produced by ST7735_Color565()
+// Output: none
+void ST7735_DrawSmallCircle(int16_t x, int16_t y, uint16_t color);
+
+//------------ST7735_DrawCircle------------
+// Draw a small circle (diameter of 10 pixels)
+// rectangle at the given coordinates with the given color.
+// Requires (11*10+68*2)=178 bytes of transmission (assuming image on screen)
+// Input: x     horizontal position of the top left corner of the circle, columns from the left edge
+//        y     vertical position of the top left corner of the circle, rows from the top edge
+//        color 16-bit color, which can be produced by ST7735_Color565()
+// Output: none
+void ST7735_DrawCircle(int16_t x, int16_t y, uint16_t color);
 
 //------------ST7735_Color565------------
 // Pass 8-bit (each) R,G,B and get back 16-bit packed color.
@@ -382,7 +454,7 @@ void ST7735_PlotNextErase(void);
 // Color set by ST7735_SetTextColor
 // Inputs: 8-bit ASCII character
 // Outputs: none
-extern "C" void ST7735_OutChar(char ch);
+void ST7735_OutChar(char ch);
 
 //********ST7735_OutString*****************
 // Print a string of characters to the ST7735 LCD.
@@ -391,7 +463,7 @@ extern "C" void ST7735_OutChar(char ch);
 // The string will not automatically wrap.
 // inputs: ptr  pointer to NULL-terminated ASCII string
 // outputs: none
-extern "C" void ST7735_OutString(char *ptr);
+void ST7735_OutString(char *ptr);
 
 // ************** ST7735_SetTextColor ************************
 // Sets the color in which the characters will be printed 
@@ -401,5 +473,26 @@ extern "C" void ST7735_OutString(char *ptr);
 // ********************************************************
 void ST7735_SetTextColor(uint16_t color);
 
+// *************** Output_Init ********************
+// Standard device driver initialization function for printf
+// Initialize ST7735 LCD
+// Inputs: none
+// Outputs: none
+void Output_Init(void);
+
+// Clear display
+void Output_Clear(void);
+
+// Turn off display (low power)
+void Output_Off(void);
+
+// Turn on display
+void Output_On(void);
+
+// set the color for future output
+// Background color is fixed at black
+// Input:  16-bit packed color
+// Output: none
+void Output_Color(uint32_t newColor); 
 
 #endif

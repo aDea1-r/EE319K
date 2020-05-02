@@ -9,10 +9,16 @@
 // maximum distance can be any value from 1.5 to 2cm
 // minimum distance is 0 cm
 // Calculate distance in fixed point, 0.01cm
-// Analog Input connected to PD2=ADC5
+// Analog Input connected to PD2=ADC0 (OG 5)
 // displays distance on Sitronox ST7735
 // PF3, PF2, PF1 are heartbeats (use them in creative ways)
 // must include at least one class used in an appropriate way
+
+#define Main //Replace with Main, MainOne, MainTwo, or MainThree depending on current test
+
+#define CONVERSION_NUMERATOR 210
+#define CONVERSION_DENOMINATOR 4096
+#define CONVERSION_OFFSET 10
 
 #include <stdint.h>
 #include "../inc/tm4c123gh6pm.h"
@@ -23,7 +29,7 @@
 #include "SlidePot.h"
 #include "print.h"
 
-SlidePot Sensor(150,0);
+SlidePot Sensor(CONVERSION_NUMERATOR,CONVERSION_DENOMINATOR, CONVERSION_OFFSET);
 
 extern "C" void DisableInterrupts(void);
 extern "C" void EnableInterrupts(void);
@@ -42,16 +48,34 @@ extern "C" void SysTick_Handler(void);
 // Output: none
 void SysTick_Init(unsigned long period){
   //*** students write this ******
+	NVIC_ST_CTRL_R = 0;
+	NVIC_ST_RELOAD_R = period;
+	NVIC_ST_CURRENT_R = 0;
+	NVIC_ST_CTRL_R = 7; 
 }
 
 // Initialize Port F so PF1, PF2 and PF3 are heartbeats
 void PortF_Init(void){
   //*** students write this ******
+	SYSCTL_RCGCGPIO_R |= 0x20;
+	__asm__ {
+		NOP
+		NOP
+	}
+	GPIO_PORTF_DIR_R |= 0x04;
+	GPIO_PORTF_DEN_R |= 0x04;
 
 }
+
+void toggleHearBeat(void) {
+	GPIO_PORTF_DATA_R ^= 0x04;
+}
+
 uint32_t Data;      // 12-bit ADC
 uint32_t Position;  // 32-bit fixed-point 0.01 cm
-int main1(void){      // single step this program and look at Data
+
+#ifdef MainOne
+int main(void){      // single step this program and look at Data
   DisableInterrupts();
   TExaS_Init();      // start scope set system clock to 80 MHz
   ADC_Init();        // turn on ADC, PD2, set channel to 5
@@ -60,32 +84,40 @@ int main1(void){      // single step this program and look at Data
     Data = ADC_In();  // sample 12-bit channel 5, PD2
   }
 }
+#endif
 
-int main2(void){
-  DisableInterrupts();
-  TExaS_Init();       // Bus clock is 80 MHz 
-  ADC_Init();        // turn on ADC, PD2, set channel to 5
-  ST7735_InitR(INITR_REDTAB); 
-  PortF_Init();
-  EnableInterrupts();
-  while(1){           // use scope to measure execution time for ADC_In and LCD_OutDec           
-    PF2 = 0x04;       // Profile ADC
-    Data = ADC_In();  // sample 12-bit channel 5, PD2
-    PF2 = 0x00;       // end of ADC Profile
+#ifdef MainTwo
+uint32_t time0,time1,time2,time3;
+uint32_t ADCtime,OutDectime; // in usec
+int main(void){
+  TExaS_Init();   	// Bus clock is 80 MHz
+  NVIC_ST_RELOAD_R = 0x00FFFFFF; // maximum reload value
+  NVIC_ST_CURRENT_R = 0;      	// any write to current clears it
+  NVIC_ST_CTRL_R = 5;
+  ADC_Init();     	// turn on ADC, set channel to 5
+  ADC0_SAC_R = 4;   // 16-point averaging, move this line into your ADC_Init()
+  ST7735_InitR(INITR_GREENTAB);
+  while(1){       	// use SysTick 
+    time0 = NVIC_ST_CURRENT_R;
+    Data = ADC_In();  // sample 12-bit channel 5
+    time1 = NVIC_ST_CURRENT_R;
     ST7735_SetCursor(0,0);
-    PF1 = 0x02;       // Profile LCD
-    LCD_OutDec(Data); 
-    ST7735_OutString("    ");  // these spaces are used to coverup characters from last output
-    PF1 = 0;          // end of LCD Profile
+    time2 = NVIC_ST_CURRENT_R;
+    LCD_OutDec(Data);
+    ST7735_OutString("	");  // spaces cover up characters from last output
+    time3 = NVIC_ST_CURRENT_R;
+    ADCtime = ((time0-time1)&0x0FFFFFF)/80;	// usec
+    OutDectime = ((time2-time3)&0x0FFFFFF)/80; // usec
   }
 }
 
+#endif
 
-
-int main3(void){ 
+#ifdef MainThree
+int main(void){ 
   DisableInterrupts();
   TExaS_Init();         // Bus clock is 80 MHz 
-  ST7735_InitR(INITR_REDTAB); 
+  ST7735_InitR(INITR_GREENTAB); 
   PortF_Init();
   ADC_Init();        // turn on ADC, PD2, set channel to 5
   EnableInterrupts();
@@ -103,16 +135,19 @@ int main3(void){
     PF1 = 0;          // end of LCD Profile
   }
 }   
+#endif
 
 
+#ifdef Main
 // final main program to create distance meter
 int main(void){ 
     //*** students write this ******
 
   DisableInterrupts();
   TExaS_Init();    // bus clock at 80 MHz
-  ST7735_InitR(INITR_REDTAB); 
+  ST7735_InitR(INITR_GREENTAB); 
   ADC_Init();        // turn on ADC, PD2, set channel to 5
+	SysTick_Init(8000000); 
   PortF_Init();
 
   // more initializations
@@ -121,11 +156,17 @@ int main(void){
   while(1){
     Sensor.Sync(); // wait for semaphore
     // can call Sensor.ADCsample, Sensor.Distance, Sensor.Convert as needed 
-      
+    uint32_t distance = Sensor.Distance(); 
+		ST7735_SetCursor(0,0); 
+		LCD_OutFix(distance); 
+		ST7735_OutString(" cm"); 
   }
 }
+#endif
+
 void SysTick_Handler(void){ // every sample
     //*** students write this ******
 // should call ADC_In() and Sensor.Save
+	toggleHearBeat(); 
   Sensor.Save(ADC_In());
 }
